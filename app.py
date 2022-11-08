@@ -2,14 +2,11 @@ from flask import Flask, request, jsonify
 import pickle
 import pandas as pd
 import numpy as np
+from utils import get_gender_encode, get_dependents_encode, get_education_encode,get_married_encode,get_property_area_encode,get_self_emp_encode
 
 model = pickle.load(open("loan_pred_model.pkl","rb"))
 
 app = Flask(__name__)
-
-@app.route('/Hello')
-def Hello():
-    return 'Hello Good Morning'
 
 @app.route('/Loan_Prediction')
 
@@ -27,6 +24,14 @@ def Loan_Prediction():
     Credit_History = data['Uesr_Credit_History']
     Property_Area = data['User_Property_Area']
 
+
+    Self_Employed = get_self_emp_encode(Self_Employed)
+    Property_Area = get_property_area_encode(Property_Area)
+    Dependents = get_dependents_encode(Dependents)
+    Education = get_education_encode(Education)
+    Gender = get_gender_encode(Gender)
+    Married = get_married_encode(Married)
+
     
     test_df = pd.DataFrame({"Gender" : [Gender], 'Married' : [Married], 'Dependents' : [Dependents], 'Education' : [Education],
        'Self_Employed' : [Self_Employed], 'ApplicantIncome' : [ApplicantIncome], 'CoapplicantIncome' : [CoapplicantIncome], 'LoanAmount':LoanAmount,
@@ -36,14 +41,6 @@ def Loan_Prediction():
 
     return jsonify ("Loan Prediction : ",int(model_output[0]))
 
-
-@app.route("/test")
-def test():
-    data1 = request.get_json()
-    name = data1['user_name']
-    mobile_no = data1['user_mobile_no']
-    
-    return jsonify({"Name":name, "Contact":mobile_no})
  
 if __name__ == '__main__':
     app.run(debug = True)
